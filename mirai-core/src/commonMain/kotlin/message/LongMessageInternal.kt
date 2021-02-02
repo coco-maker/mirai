@@ -100,10 +100,10 @@ internal data class ForwardMessageInternal(override val content: String) : Abstr
     override val serviceId: Int get() = 35
 
     override suspend fun refine(contact: Contact, context: MessageChain): Message {
-        val bot = contact.bot.asQQAndroidBot()
-        TODO("ForwardMessageInternal")
-
-        //
+        // val bot = contact.bot.asQQAndroidBot()
+        // TODO: 2021/2/2 Support forward message refinement
+        // https://github.com/mamoe/mirai/issues/623
+        return this
     }
 
     companion object Key :
