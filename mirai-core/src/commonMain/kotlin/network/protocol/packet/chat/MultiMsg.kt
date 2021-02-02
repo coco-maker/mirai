@@ -152,8 +152,13 @@ internal class MultiMsg {
         }
     }
 
-    object ApplyDown: OutgoingPacketFactory<ApplyDown.Response>("MultiMsg.ApplyDown") {
+    object ApplyDown : OutgoingPacketFactory<ApplyDown.Response>("MultiMsg.ApplyDown") {
         sealed class Response : Packet {
+            class RequireDownload(
+                val origin: MultiMsg.MultiMsgApplyDownRsp
+            ) : Response() {
+                override fun toString(): String = "MultiMsg.ApplyDown.Response"
+            }
 
             object MessageTooLarge : Response()
         }
@@ -171,7 +176,7 @@ internal class MultiMsg {
                     buildVer = "8.2.0.1296",
                     multimsgApplydownReq = listOf(
                         MultiMsg.MultiMsgApplyDownReq(
-                            msgResid =  resId,
+                            msgResid = resId,
                             msgType = msgType,
                         )
                     ),
@@ -185,7 +190,18 @@ internal class MultiMsg {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            return Response.MessageTooLarge
+            val body = readProtoBuf(MultiMsg.RspBody.serializer())
+            val response = body.multimsgApplydownRsp.first()
+            return when (response.result) {
+                0 -> Response.RequireDownload(response)
+                193 -> Response.MessageTooLarge
+                //1 -> Response.OK(resId = response.msgResid)
+                else -> {
+                    error(kotlin.run {
+                        println(response._miraiContentToString())
+                    }.let { "Protocol error: MultiMsg.ApplyDown failed with result ${response.result}" })
+                }
+            }
         }
     }
 }
