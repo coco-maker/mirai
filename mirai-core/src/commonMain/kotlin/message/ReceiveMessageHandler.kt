@@ -58,6 +58,7 @@ internal fun List<MsgComm.Msg>.toMessageChainNoSource(
 ): MessageChain {
     return toMessageChain(null, botId, groupIdOrZero, null, messageSourceKind)
 }
+
 private fun List<MsgComm.Msg>.toMessageChain(
     bot: Bot?,
     botId: Long,
@@ -116,7 +117,7 @@ private object ReceiveMessageTransformer {
         builder: MessageChainBuilder
     ) {
         // (this._miraiContentToString().soutv())
-        val generalFlags = elements.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()
+        val generalFlags = elements.find { it.generalFlags != null }?.generalFlags
 
         for (element in elements) {
             transformElement(element, groupIdOrZero, messageSourceKind, botId, builder)
